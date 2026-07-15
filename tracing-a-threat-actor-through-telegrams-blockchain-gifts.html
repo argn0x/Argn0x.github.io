@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tracing a Threat Actor Through Telegram's Blockchain Gifts.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Root ──────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #1e1e2e;
+  --bg-2:        #181825;
+  --surface:     #24273a;
+  --surface-2:   #2a2d3e;
+  --border:      #363a4f;
+  --border-2:    #494d64;
+  --text:        #cad3f5;
+  --text-muted:  #8087a2;
+  --text-dim:    #6e738d;
+  --accent:      #8aadf4;
+  --accent-2:    #b7bdf8;
+  --green:       #a6da95;
+  --red:         #ed8796;
+  --yellow:      #eed49f;
+  --purple:      #c6a0f6;
+  --teal:        #8bd5ca;
+  --pink:        #f5bde6;
+  --orange:      #f5a97f;
+  --code-bg:     #181825;
+  --scrollbar:   #363a4f;
+  --heading:     #fff;
+  --link:        #8aadf4;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  line-height: 1.8;
+  min-height: 100vh;
+}
+
+/* ── Layout ────────────────────────────────────────────────────────────────── */
+.obsidian-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: var(--bg-2);
+  border-right: 1px solid var(--border);
+  padding: 20px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  padding: 0 16px 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--heading);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #b7bdf8, #c6a0f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.sidebar-brand:hover {
+  filter: drop-shadow(0 0 8px rgba(198,160,246,0.5));
+  transform: scale(1.02);
+}
+
+.sidebar-brand svg {
+  opacity: 0.9;
+  filter: drop-shadow(0 0 5px rgba(124,58,237,0.5));
+}
+
+.toc-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0 16px 8px;
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+}
+
+.toc-item {
+  padding: 0;
+}
+
+.toc-link {
+  display: block;
+  padding: 5px 16px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.15s ease;
+  border-left: 2px solid transparent;
+  line-height: 1.4;
+}
+
+.toc-link:hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.05);
+  border-left-color: var(--accent);
+}
+
+.toc-link.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(138,173,244,0.08);
+}
+
+.toc-h1 { padding-left: 16px; font-weight: 500; }
+.toc-h2 { padding-left: 28px; }
+.toc-h3 { padding-left: 40px; font-size: 12px; }
+
+/* ── Main Content ──────────────────────────────────────────────────────────── */
+.main-area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 24px;
+}
+
+.content-wrapper {
+  width: 100%;
+  max-width: 780px;
+  padding: 60px 0 120px;
+}
+
+/* ── Tab bar (Obsidian feel) ───────────────────────────────────────────────── */
+.tab-bar {
+  display: flex;
+  align-items: flex-end;
+  background: rgba(24, 24, 37, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0 20px;
+  height: 54px;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-radius: 10px 10px 0 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: none;
+  border-top: 2px solid var(--accent); /* Active tab highlight */
+  max-width: 800px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  color: var(--accent);
+}
+
+.tab-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;
+  margin-left: 8px;
+  border-radius: 4px;
+  padding: 2px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.tab-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Typography ────────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--heading);
+  font-weight: 600;
+  line-height: 1.35;
+  margin-top: 2.2em;
+  margin-bottom: 0.6em;
+  position: relative;
+}
+
+h1 { font-size: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-top: 0; }
+
+.content-wrapper > h1:first-of-type {
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+  margin-bottom: 1.2rem;
+  border-bottom: none;
+  background: linear-gradient(135deg, #ffffff 0%, #b7bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 12px rgba(183, 189, 248, 0.15));
+}
+h2 { font-size: 1.5rem; border-bottom: 1px solid var(--border-2); padding-bottom: 0.35rem; }
+h3 { font-size: 1.2rem; }
+h4 { font-size: 1.05rem; }
+h5 { font-size: 0.95rem; }
+h6 { font-size: 0.9rem; color: var(--text-muted); }
+
+h1 .heading-anchor, h2 .heading-anchor, h3 .heading-anchor,
+h4 .heading-anchor, h5 .heading-anchor, h6 .heading-anchor {
+  opacity: 0;
+  font-size: 0.7em;
+  color: var(--accent);
+  text-decoration: none;
+  margin-left: 0.5em;
+  transition: opacity 0.2s;
+}
+
+h1:hover .heading-anchor, h2:hover .heading-anchor, h3:hover .heading-anchor,
+h4:hover .heading-anchor, h5:hover .heading-anchor, h6:hover .heading-anchor {
+  opacity: 1;
+}
+
+p {
+  margin: 0.9em 0;
+}
+
+strong { color: var(--text); font-weight: 600; }
+em { color: var(--text); font-style: italic; }
+del { color: var(--text-muted); text-decoration: line-through; }
+
+/* Obsidian highlight ==text== */
+mark {
+  background: rgba(255, 214, 0, 0.25);
+  color: var(--yellow);
+  border-radius: 3px;
+  padding: 0 3px;
+}
+
+/* ── Links ─────────────────────────────────────────────────────────────────── */
+a {
+  color: var(--link);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+a:hover {
+  color: var(--accent-2);
+  border-bottom-color: var(--accent-2);
+}
+
+.wikilink {
+  color: var(--purple);
+  background: rgba(198,160,246,0.08);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.92em;
+}
+
+/* ── Code ──────────────────────────────────────────────────────────────────── */
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 0.84em;
+  background: var(--code-bg);
+  color: var(--pink);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  font-variant-ligatures: none;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 22px;
+  overflow-x: auto;
+  margin: 1.4em 0;
+  position: relative;
+}
+
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text);
+  font-size: 0.88em;
+  line-height: 1.7;
+}
+
+.code-lang-label {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Syntax highlighting colours */
+.kw  { color: #c6a0f6; font-weight: 500; }
+.str { color: #a6da95; }
+.num { color: #f5a97f; }
+.cmt { color: #6e738d; font-style: italic; }
+.fn  { color: #8aadf4; }
+.cls { color: #eed49f; }
+.op  { color: #8bd5ca; }
+.key { color: #ed8796; }
+.val { color: #f5bde6; }
+
+/* ── Horizontal Rule ───────────────────────────────────────────────────────── */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.5em 0;
+}
+
+/* ── Blockquote (plain, non-callout) ────────────────────────────────────────── */
+blockquote {
+  border-left: 3px solid var(--border-2);
+  margin: 1.2em 0;
+  padding: 10px 20px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+blockquote p { margin: 0.3em 0; }
+
+/* ── Callouts ──────────────────────────────────────────────────────────────── */
+.callout {
+  border-radius: 10px;
+  border: 1px solid;
+  margin: 1.4em 0;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.callout:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.callout-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: default;
+  user-select: none;
+}
+
+.callout-header.foldable {
+  cursor: pointer;
+}
+
+.callout-icon {
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.callout-title {
+  flex: 1;
+}
+
+.callout-fold {
+  margin-left: auto;
+  font-size: 12px;
+  opacity: 0.6;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.callout.collapsed .callout-fold {
+  transform: rotate(-90deg);
+}
+
+.callout-body {
+  padding: 14px 16px 14px 20px;
+  border-top: 1px solid;
+  font-size: 0.93rem;
+  line-height: 1.75;
+}
+
+.callout.collapsed .callout-body {
+  display: none;
+}
+
+.callout-body p { margin: 0.4em 0; }
+.callout-body p:first-child { margin-top: 0; }
+.callout-body p:last-child { margin-bottom: 0; }
+
+.callout-body ul, .callout-body ol {
+  padding-left: 20px;
+  margin: 0.4em 0;
+}
+
+.callout-body img {
+  margin: 10px 0;
+}
+
+/* ── Images ────────────────────────────────────────────────────────────────── */
+img {
+  max-width: 100%;
+  border-radius: 8px;
+  display: block;
+  margin: 1em auto;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+img:hover {
+  transform: scale(1.01);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.img-missing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 2px dashed var(--border-2);
+  border-radius: 8px;
+  padding: 20px;
+  color: var(--text-dim);
+  font-size: 0.85em;
+  margin: 1em 0;
+  gap: 8px;
+}
+
+/* ── Tables ────────────────────────────────────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.4em 0;
+  font-size: 0.92em;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+thead tr {
+  background: var(--surface-2);
+}
+
+th {
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--heading);
+  border-bottom: 2px solid var(--border);
+}
+
+td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+tbody tr:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Lists ─────────────────────────────────────────────────────────────────── */
+ul, ol {
+  padding-left: 28px;
+  margin: 0.7em 0;
+}
+
+li {
+  margin: 0.3em 0;
+  line-height: 1.7;
+}
+
+li::marker {
+  color: var(--text-muted);
+}
+
+/* Task lists */
+.task-list { list-style: none; padding-left: 4px; }
+.task-item { display: flex; align-items: flex-start; gap: 8px; margin: 0.35em 0; }
+.task-checkbox {
+  width: 16px; height: 16px; margin-top: 3px;
+  accent-color: var(--accent);
+  cursor: default;
+  flex-shrink: 0;
+}
+
+/* ── Tags ──────────────────────────────────────────────────────────────────── */
+.tag {
+  display: inline-block;
+  background: rgba(138,173,244,0.12);
+  color: var(--accent);
+  padding: 1px 8px;
+  border-radius: 12px;
+  font-size: 0.82em;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-2); }
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main-area { padding: 0 16px; }
+}
+
+@media print {
+  .sidebar, .tab-bar { display: none; }
+  body { background: white; color: black; }
+  .content-wrapper { padding: 20px; max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+
+
+<div class="obsidian-layout">
+
+  <!-- Sidebar / TOC -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <svg width="22" height="22" viewBox="0 0 100 100" fill="none">
+          <path d="M50 5 L90 25 L90 75 L50 95 L10 75 L10 25 Z" fill="#7c3aed" opacity="0.8"/>
+          <path d="M50 20 L75 35 L75 65 L50 80 L25 65 L25 35 Z" fill="#a78bfa" opacity="0.9"/>
+          <path d="M50 35 L65 45 L65 55 L50 65 L35 55 L35 45 Z" fill="#ddd6fe"/>
+        </svg>
+        Argn0x
+      </div>
+    </div>
+    <div class="toc-title">Table of Contents</div>
+    <ul class="toc-list" id="toc-list">
+      <li class="toc-item"><a href="#tracing-a-threat-actor-through-telegrams-blockchain-gifts" class="toc-link toc-h1">Tracing a Threat Actor Through Telegram's Blockchain Gifts</a></li>
+      <li class="toc-item"><a href="#1-overview" class="toc-link toc-h2">1. Overview</a></li>
+      <li class="toc-item"><a href="#2-tracking-the-second-account" class="toc-link toc-h2">2. Tracking the Second Account</a></li>
+      <li class="toc-item"><a href="#21-funstat" class="toc-link toc-h3">2.1 Funstat</a></li>
+      <li class="toc-item"><a href="#22-telesint" class="toc-link toc-h3">2.2 TeleSint</a></li>
+      <li class="toc-item"><a href="#23-telescan" class="toc-link toc-h3">2.3 TeleScan</a></li>
+      <li class="toc-item"><a href="#24-tgdb" class="toc-link toc-h3">2.4 TGDB</a></li>
+      <li class="toc-item"><a href="#3-the-technique-nft-gift-tracing-as-an-osint-pivot" class="toc-link toc-h2">3. The Technique: NFT Gift Tracing as an OSINT Pivot</a></li>
+      <li class="toc-item"><a href="#4-pivoting-to-nft-gifts" class="toc-link toc-h2">4. Pivoting to NFT Gifts</a></li>
+      <li class="toc-item"><a href="#41-how-telegram-nft-gifts-work" class="toc-link toc-h3">4.1 How Telegram NFT Gifts Work</a></li>
+      <li class="toc-item"><a href="#5-tracing-the-nfts-on-the-blockchain" class="toc-link toc-h2">5. Tracing the NFTs on the Blockchain</a></li>
+      <li class="toc-item"><a href="#51-tonviewer" class="toc-link toc-h3">5.1 Tonviewer</a></li>
+      <li class="toc-item"><a href="#52-seetg" class="toc-link toc-h3">5.2 see.tg</a></li>
+      <li class="toc-item"><a href="#6-mapping-the-actors-network-through-gift-exchanges" class="toc-link toc-h2">6. Mapping the Actor's Network Through Gift Exchanges</a></li>
+      <li class="toc-item"><a href="#7-results" class="toc-link toc-h2">7. Results</a></li>
+      <li class="toc-item"><a href="#71-what-the-groups-revealed" class="toc-link toc-h3">7.1 What the Groups Revealed</a></li>
+      <li class="toc-item"><a href="#72-opsec-mistakes" class="toc-link toc-h3">7.2 OPSEC Mistakes</a></li>
+      <li class="toc-item"><a href="#73-what-came-next" class="toc-link toc-h3">7.3 What Came Next</a></li>
+      <li class="toc-item"><a href="#8-tools-used" class="toc-link toc-h2">8. Tools Used</a></li>
+
+    </ul>
+  </nav>
+
+  <!-- Main content -->
+  <div class="main-area">
+    <div class="content-wrapper" id="content">
+<h1 id="tracing-a-threat-actor-through-telegrams-blockchain-gifts">Tracing a Threat Actor Through Telegram's Blockchain Gifts<a href="#tracing-a-threat-actor-through-telegrams-blockchain-gifts" class="heading-anchor">🔗</a></h1>
+<h2 id="1-overview">1. Overview<a href="#1-overview" class="heading-anchor">🔗</a></h2>
+<p>While tracking a Telegram account belonging to a threat actor, the account was found to be active in several private groups where the actor was advertising unauthorized access to government systems.</p>
+<p>While going through the actor's old messages, something interesting appeared that gave a new lead. In one message, the actor asked:</p>
+<blockquote>
+  <p>"Who kicked my other account?" "@████"</p>
+</blockquote>
+<img src="tracing-a-threat-actor-through-telegrams-blockchain-gifts/photos/117ba536-0d3d-441b-8046-cfa2c7b7a40e.png" alt="117ba536-0d3d-441b-8046-cfa2c7b7a40e.png" loading="lazy">
+<p>Then he shared the username of that account. A few moments later, he sent another message:</p>
+<blockquote>
+  <p>"I'm Ziad."</p>
+</blockquote>
+<img src="tracing-a-threat-actor-through-telegrams-blockchain-gifts/photos/Pasted image 20260714141713.png" alt="Pasted image 20260714141713.png" loading="lazy">
+<p>At that point, it became clear that the threat actor was using more than one Telegram account. The second account also appeared more important. Instead of hiding behind a nickname like many threat actors do, the person behind it introduced himself as Ziad, a real first name.</p>
+<hr>
+<h2 id="2-tracking-the-second-account">2. Tracking the Second Account<a href="#2-tracking-the-second-account" class="heading-anchor">🔗</a></h2>
+<p>After discovering the second account, it was investigated using the standard tools typically relied on during Telegram investigations: <strong>Funstat</strong>, <strong>TeleSint</strong>, <strong>TeleScan</strong>, and <strong>TGDB</strong>.</p>
+<h3 id="21-funstat">2.1 Funstat<a href="#21-funstat" class="heading-anchor">🔗</a></h3>
+<p>The first thing that caught the eye was the account's activity timeline. It had been active since 2024, while the primary account used to advertise unauthorized access to government systems was only created near the end of 2025.</p>
+<p>That was the first clear indication that this wasn't just a secondary account it was most likely the actor's <strong>original Telegram account</strong>.</p>
+<p>However, no messages could be retrieved. The actor had subscribed to <strong>Funstat's Hide Data</strong> feature, which prevents message history from being accessed through the Bot. This told something important on its own: the actor was aware of how Funstat works and had taken steps to protect himself.</p>
+<img src="tracing-a-threat-actor-through-telegrams-blockchain-gifts/photos/Pasted image 20260714115713.png" alt="Pasted image 20260714115713.png" loading="lazy" width="296">
+<p>Funstat currently offers two privacy plans:</p>
+<ol>
+  <li><strong>Ninja</strong> -> Hides groups, channels, messages, and analysis.</li>
+  <li><strong>Shadow</strong> -> Hides everything except basic statistics, rankings, and gifts.</li>
+</ol>
+<p>Both plans include one notable feature: whenever someone searches for a protected profile and clicks on a hidden section, the account owner receives a notification:</p>
+<blockquote>
+  <p>"ID \<em>\</em>\*12######7 was interested in you."</p>
+</blockquote>
+<img src="tracing-a-threat-actor-through-telegrams-blockchain-gifts/photos/Pasted image 20260714120001.png" alt="Pasted image 20260714120001.png" loading="lazy" width="235">
+<p>The bot then encourages the account owner to pay again to reveal more information about the person who searched for them.</p>
+<p><strong>OPSEC Note:</strong> Never use your personal Telegram account during investigations like this. If your target is using Funstat's protection, clicking on a hidden section will notify them that someone is looking. Always use a fresh or throwaway account when interacting with services like Funstat.</p>
+<h3 id="22-telesint">2.2 TeleSint<a href="#22-telesint" class="heading-anchor">🔗</a></h3>
+<p>Since Funstat didn't give me much to work with, I decided to move on to TeleSint.</p>
+<p>TeleSint returned the account's <strong>name history</strong>, showing the display name had been changed 33 times over the years.</p>
+<img src="tracing-a-threat-actor-through-telegrams-blockchain-gifts/photos/Pasted image 20260715024440.png" alt="Pasted image 20260715024440.png" loading="lazy" width="236">
+<p>What mattered was not the number of changes, but what the <strong>very first display name</strong> had been.</p>
+<p>The earliest recorded name on the account was simply <strong>"Z"</strong>.</p>
+<p>Considering the actor had already introduced himself as <strong>"Ziad"</strong> from his other account, this was another small but consistent detail supporting the link between the two accounts. TeleSint could not provide message history or group data, so the investigation moved on.</p>
+<h3 id="23-telescan">2.3 TeleScan<a href="#23-telescan" class="heading-anchor">🔗</a></h3>
+<p>TeleScan returned only an estimated <strong>registration date</strong> for the account, which was already known. No messages, groups, or additional details were retrievable.</p>
+<img src="tracing-a-threat-actor-through-telegrams-blockchain-gifts/photos/Pasted image 20260714121641.png" alt="Pasted image 20260714121641.png" loading="lazy" width="316">
+<h3 id="24-tgdb">2.4 TGDB<a href="#24-tgdb" class="heading-anchor">🔗</a></h3>
+<p>Unlike the previous tools, TGDB provided one additional data point: the account's <strong>username history</strong>.</p>
+<img src="tracing-a-threat-actor-through-telegrams-blockchain-gifts/photos/Pasted image 20260714122047.png" alt="Pasted image 20260714122047.png" loading="lazy" width="278">
+<hr>
+<h2 id="3-the-technique-nft-gift-tracing-as-an-osint-pivot">3. The Technique: NFT Gift Tracing as an OSINT Pivot<a href="#3-the-technique-nft-gift-tracing-as-an-osint-pivot" class="heading-anchor">🔗</a></h2>
+<p>When a target actively protects their Telegram account by hiding their messages, deleting their history, and using privacy bots, the usual investigation tools hit a wall. But there's one thing they can't control: the blockchain.</p>
+<p>Every Telegram NFT Gift is minted on the <strong>TON blockchain</strong>. That means every transfer, every sender, every receiver is recorded permanently in a public ledger. No privacy plan covers it. No deletion reaches it. The target can disappear from every OSINT bot and still leave a visible trail on-chain through every gift they've ever sent or received.</p>
+<p>This is what makes the technique work. Instead of trying to reach the target directly, you reach them through the network they unknowingly built around themselves.</p>
+<hr>
+<div style="margin-bottom: 1em;">
+  <strong>Step 1: Confirm the target owns NFT Gifts</strong>
+  <p>Check their profile. If gifts are present, an on-chain record exists. That's your entry point.</p>
+</div>
+<div style="margin-bottom: 1em;">
+  <strong>Step 2: Map their gift exchange network</strong>
+  <p>Pull the full transaction history and identify who they've exchanged gifts with. Focus on the accounts with the highest frequency, those are the ones most likely to be real contacts.</p>
+</div>
+<div style="margin-bottom: 1em;">
+  <strong>Step 3: Pivot to the network</strong>
+  <p>Run OSINT on those accounts. You're not targeting them, you're looking for <strong>groups they share with the target</strong>. If even one of those contacts left their history unprotected, the target's messages in those shared groups become fully accessible.</p>
+</div>
+<div style="margin-bottom: 1em;">
+  <strong>Key Insight</strong>
+  <p>The actor protects himself. He doesn't protect the people around him. That gap is where the investigation continues.</p>
+</div>
+<hr>
+<h2 id="4-pivoting-to-nft-gifts">4. Pivoting to NFT Gifts<a href="#4-pivoting-to-nft-gifts" class="heading-anchor">🔗</a></h2>
+<p>At this point, the standard Telegram OSINT toolset had been exhausted without delivering important results. A different approach was needed.</p>
+<p>While reviewing the account profile, it was noticed that the account owned several <strong>Telegram NFT Gifts</strong>. That small detail ended up opening a completely new path in the investigation.</p>
+<img src="tracing-a-threat-actor-through-telegrams-blockchain-gifts/photos/NFT.png" alt="NFT.png" loading="lazy" width="258">
+<h3 id="41-how-telegram-nft-gifts-work">4.1 How Telegram NFT Gifts Work<a href="#41-how-telegram-nft-gifts-work" class="heading-anchor">🔗</a></h3>
+<p>When a regular Telegram Gift is upgraded to an NFT, it is minted on the <strong>TON blockchain</strong>. From that moment, the gift is no longer just a decorative element on a Telegram profile. It becomes a blockchain asset with a public transaction history that stays forever.</p>
+<p>This difference is critical from an OSINT point of view. Unlike Telegram messages, which can be deleted or hidden behind paid privacy plans, <strong>blockchain records cannot be modified or removed</strong>. Every transfer, every owner, and every transaction timestamp is permanently recorded and accessible to anyone.</p>
+<p>This meant the investigation no longer had to depend on Telegram OSINT tools. Instead, the trail could be followed on-chain, where the actor had no ability to erase his footprints.</p>
+<hr>
+<h2 id="5-tracing-the-nfts-on-the-blockchain">5. Tracing the NFTs on the Blockchain<a href="#5-tracing-the-nfts-on-the-blockchain" class="heading-anchor">🔗</a></h2>
+<h3 id="51-tonviewer">5.1 Tonviewer<a href="#51-tonviewer" class="heading-anchor">🔗</a></h3>
+<p>The first tool used was <strong>Tonviewer</strong>, a TON blockchain explorer that allows inspection of NFT assets including the current owner, the full transfer history, minting details, and the wallet currently holding the asset. Since all of this data is stored on the blockchain, it is publicly accessible and cannot be removed.</p>
+<img src="tracing-a-threat-actor-through-telegrams-blockchain-gifts/photos/Pasted image 20260714124135.png" alt="Pasted image 20260714124135.png" loading="lazy" width="601">
+<h3 id="52-seetg">5.2 see.tg<a href="#52-seetg" class="heading-anchor">🔗</a></h3>
+<p>A more practical tool for this specific investigation was <strong>see.tg</strong>. It supports searching directly by Telegram username or user ID and presents the account's full NFT activity in a readable format, including gifts that are no longer visible on the user's public profile.</p>
+<img src="tracing-a-threat-actor-through-telegrams-blockchain-gifts/photos/Pasted image 20260714124903.png" alt="Pasted image 20260714124903.png" loading="lazy" width="262">
+<p>Using see.tg, every NFT Gift the account had ever received or sent was collected and mapped. All Telegram usernames involved in those transactions were recorded, then analyzed to determine which accounts had the most frequent interactions with the target.</p>
+<p>Accounts with the highest number of gift exchanges likely shared an actual relationship with the threat actor, whether as friends or trusted contacts.</p>
+<hr>
+<h2 id="6-mapping-the-actors-network-through-gift-exchanges">6. Mapping the Actor's Network Through Gift Exchanges<a href="#6-mapping-the-actors-network-through-gift-exchanges" class="heading-anchor">🔗</a></h2>
+<p>After mapping all accounts that had exchanged NFT Gifts with the target, a new cluster of connected accounts emerged.</p>
+<img src="tracing-a-threat-actor-through-telegrams-blockchain-gifts/photos/Pasted image 20260714125817.png" alt="Pasted image 20260714125817.png" loading="lazy" width="263">
+<p>Rather than continuing to focus on the threat actor's own account directly, the investigation shifted to the <strong>people around him</strong>.</p>
+<p>The reasoning was simple. Even if the threat actor had successfully hidden his own Telegram activity using paid privacy tools, the people he interacted with might not have taken the same precautions. They were the weak link in his operational security.</p>
+<p>Each account from the gift exchange map was searched using <strong>Funstat</strong> and the other Telegram OSINT tools. The goal at this stage was not to profile those accounts individually, but specifically to identify <strong>Telegram groups they shared with the threat actor</strong>.</p>
+<p>If shared groups could be found, there was a good chance that messages posted by the threat actor, messages he believed were deleted or hidden, would still be accessible through the records of other group members.</p>
+<p>One by one, each account was checked until several <strong>mutual groups</strong> were identified.</p>
+<img src="tracing-a-threat-actor-through-telegrams-blockchain-gifts/photos/GROUP.png" alt="GROUP.png" loading="lazy">
+<hr>
+<h2 id="7-results">7. Results<a href="#7-results" class="heading-anchor">🔗</a></h2>
+<h3 id="71-what-the-groups-revealed">7.1 What the Groups Revealed<a href="#71-what-the-groups-revealed" class="heading-anchor">🔗</a></h3>
+<p>The actor was listed as an <strong>admin</strong> in several of the mutual groups. His display name in all of them was <strong>"Ziad"</strong> the same name that came up twice before: once in a direct message from his primary account, and once as the initial "Z" on his older account.</p>
+<p>At this point it was clear these were the same person.</p>
+<p>Since the people around him hadn't made the effort to protect their accounts, their group histories were completely open. And since the actor was in those groups, his own messages were there too  messages he probably thought had disappeared.</p>
+<p>We collected those messages across all the shared groups. That gave us his activity timeline, the people he talked to, and the things he discussed. Everything Funstat's privacy plan was supposed to hide ended up being recoverable through the people he trusted.</p>
+<h3 id="72-opsec-mistakes">7.2 OPSEC Mistakes<a href="#72-opsec-mistakes" class="heading-anchor">🔗</a></h3>
+<p>This actor clearly knew what he was doing. He paid for Funstat's privacy plan, used a separate account for public activity, and tried to keep a low profile. But he still made some basic mistakes.</p>
+<div style="margin-bottom: 1em;">
+  <strong>Mistake 1 -> Mentioning his real name in a group chat</strong>
+  <p>The whole investigation started because he revealed his second account in a group message and introduced himself by his real first name. One careless moment gave us both a second account and a real identity.</p>
+</div>
+<div style="margin-bottom: 1em;">
+  <strong>Mistake 2 -> Protecting himself but ignoring his contacts</strong>
+  <p>His own account was locked down, but the people he interacted with weren't. Since he had exchanged NFT gifts with them, we could trace those connections and access their open group histories  which included his own messages.</p>
+</div>
+<div style="margin-bottom: 1em;">
+  <strong>Mistake 3 -> NFT gifts left a permanent record</strong>
+  <p>Every gift sent or received on the TON blockchain is public and cannot be deleted. By using gifts to connect with close contacts, he unknowingly created a permanent map of his trusted network on the blockchain.</p>
+</div>
+<div style="margin-bottom: 1em;">
+  <strong>Mistake 4 -> Same identity across multiple accounts</strong>
+  <p>He used the same name and initial across accounts and held admin roles in multiple groups. That consistency made it easy to link everything together.</p>
+</div>
+<h3 id="73-what-came-next">7.3 What Came Next<a href="#73-what-came-next" class="heading-anchor">🔗</a></h3>
+<p>By the end of this phase, we had a confirmed name, a list of connected accounts, and a full archive of his messages collected from the shared groups.</p>
+<p>That was enough to move into the main investigation: tracking his activity, understanding who he worked with, and mapping out his operations in detail.</p>
+<p>The NFT gift trail was the starting point that made all of it possible.</p>
+<hr>
+<h2 id="8-tools-used">8. Tools Used<a href="#8-tools-used" class="heading-anchor">🔗</a></h2>
+<table>
+<thead><tr><th>Tool</th><th>Purpose</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td><strong>Funstat</strong></td><td>Message history, group activity</td><td>Blocked by paid privacy plan</td></tr>
+<tr><td><strong>TeleSint</strong></td><td>Name history, group data</td><td>Name history only (33 changes, first name: "Z")</td></tr>
+<tr><td><strong>TeleScan</strong></td><td>Account registration date</td><td>Registration date only</td></tr>
+<tr><td><strong>TGDB</strong></td><td>Username history</td><td>Username history retrieved</td></tr>
+<tr><td><strong>Tonviewer</strong></td><td>On-chain NFT inspection</td><td>Owner, transfer history, wallet details</td></tr>
+<tr><td><strong>see.tg</strong></td><td>NFT gift activity by username</td><td>Full gift transaction history, sender/receiver usernames</td></tr>
+</tbody></table>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+// TOC active state on scroll
+const tocLinks = document.querySelectorAll('.toc-link');
+const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]');
+
+function updateActiveToc() {
+  let current = '';
+  headings.forEach(h => {
+    if (window.scrollY >= h.offsetTop - 120) current = h.id;
+  });
+  tocLinks.forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+  });
+}
+
+window.addEventListener('scroll', updateActiveToc, { passive: true });
+updateActiveToc();
+
+// Foldable callouts
+document.querySelectorAll('.callout-header.foldable').forEach(header => {
+  header.addEventListener('click', () => {
+    header.closest('.callout').classList.toggle('collapsed');
+  });
+});
+
+// Smooth TOC scroll
+document.querySelectorAll('.toc-link, .wikilink').forEach(link => {
+  link.addEventListener('click', e => {
+    const href = link.getAttribute('href');
+    if (href && href.startsWith('#')) {
+      e.preventDefault();
+      const id = href.substring(1);
+      const target = document.getElementById(id);
+      if (target) {
+        const offset = 60;
+        const top = target.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    }
+  });
+});
+</script>
+</body>
+</html>
