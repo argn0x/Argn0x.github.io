@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marx1337 Identity Reveal | Argn0x</title>
+
+  <meta name="description" content="Marx1337 sells SMS gateway logs relabeled as breaches of big brands. DeXpose follows the OSINT trail to the operator behind them.">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Marx1337 Identity Reveal | Argn0x">
+  <meta property="og:description" content="Marx1337 sells SMS gateway logs relabeled as breaches of big brands. DeXpose follows the OSINT trail to the operator behind them.">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Fallback for visitors with JavaScript disabled -->
+  <noscript><meta http-equiv="refresh" content="3;url=https://www.dexpose.io/marx1337-sms-gateway-logs/"></noscript>
+
+  <style>
+    .redirect {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+    }
+
+    .redirect-card {
+      position: relative;
+      width: 100%;
+      max-width: 640px;
+      padding: 2.25rem 2.75rem 2rem;
+      text-align: center;
+      background: rgba(20, 20, 23, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25), 0 30px 80px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      animation: fadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+
+    .redirect-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.08), transparent 65%);
+      pointer-events: none;
+    }
+
+    .redirect-card > * {
+      position: relative;
+    }
+
+    .redirect-card .badge {
+      margin: 1.25rem 0 1.1rem;
+    }
+
+    .redirect-title {
+      font-size: clamp(2rem, 7vw, 3rem);
+      line-height: 1.1;
+      letter-spacing: -1px;
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+    }
+
+    .redirect-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent-2);
+      letter-spacing: 0.5px;
+      margin-bottom: 1.5rem;
+    }
+
+    .redirect-blurb {
+      max-width: 540px;
+      margin: 0 auto;
+      font-size: 0.98rem;
+      line-height: 1.75;
+      color: rgba(243, 243, 244, 0.82);
+    }
+
+    .loader {
+      position: relative;
+      height: 3px;
+      margin: 1.5rem 0 1.25rem;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .loader::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      width: 40%;
+      background: linear-gradient(90deg, transparent, #ffffff, transparent);
+      animation: slide 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    .notice {
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--accent-2);
+    }
+
+    .notice-link {
+      display: block;
+      margin: 0.9rem auto 0;
+      padding: 0.75rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text);
+      text-decoration: none;
+      word-break: break-all;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .notice-link:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    @keyframes slide {
+      from { transform: translateX(-100%); }
+      to   { transform: translateX(250%); }
+    }
+
+    @media (max-width: 600px) {
+      .redirect { padding: 1rem; }
+      .redirect-card { padding: 1.75rem 1.25rem 1.5rem; }
+      .redirect-card .badge {
+        margin: 1rem 0;
+        padding: 0.4rem 0.9rem;
+        font-size: 0.65rem;
+        letter-spacing: 1px;
+        white-space: nowrap;
+      }
+      .redirect-meta { margin-bottom: 1.1rem; }
+      .redirect-blurb { font-size: 0.9rem; line-height: 1.65; }
+      .loader { margin: 1.25rem 0 1rem; }
+      .notice { font-size: 0.8rem; line-height: 1.6; }
+      .notice-link { padding: 0.6rem 0.75rem; font-size: 0.7rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .glow-orb, .loader::after, .redirect-card { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Background -->
+  <div class="ambient-bg">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+  </div>
+  <div class="bg-grid"></div>
+
+  <main class="redirect">
+    <div class="redirect-card">
+      <div class="logo"><span class="logo-text">Argn0x</span></div>
+
+      <div class="badge">CYBER CRIME / THREAT ACTORS</div>
+
+      <h1 class="redirect-title"><span class="gradient-text">Marx1337 Identity Reveal</span></h1>
+      <div class="redirect-meta">Nov 20, 2026 &middot; 16 min read</div>
+
+      <p class="redirect-blurb">
+        Marx1337 advertises &ldquo;breaches&rdquo; of brands like HSBC, Samsung and PayPal. What he actually sells are slices of SMS gateway logs, transaction alerts and one-time codes, relabeled with famous names. This investigation follows his digital footprint across forums and Telegram through an OSINT pivot chain, linking his personas to older accounts and revealing the operator behind them.
+      </p>
+
+      <div class="loader" aria-hidden="true"></div>
+
+      <p class="notice">
+        You are being redirected to the full analysis on DeXpose Blog. If you are not redirected automatically, click the link
+        <a class="notice-link" id="go" href="https://www.dexpose.io/marx1337-sms-gateway-logs/">https://www.dexpose.io/marx1337-sms-gateway-logs/</a>
+      </p>
+    </div>
+  </main>
+
+  <script>
+    // replace() keeps this page out of history so Back never loops
+    setTimeout(function () {
+      window.location.replace(document.getElementById('go').href);
+    }, 3000);
+  </script>
+</body>
+</html>
